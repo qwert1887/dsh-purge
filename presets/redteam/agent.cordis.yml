@@ -307,6 +307,8 @@
         backgroundMode: continuable
         # 0.2.1 用 Agent Preset 取代 toolFilter：子智能体固定跑「红队模式（子智能体）」
         # 这个叶子预设（无 delegation 组、persona 已清空），从根上没有派发工具。
+        # 叶子默认**不注册**（面板「清洗 → 子智能体叶子预设」勾上才启用）；关着时
+        # 启动逻辑会把下面两行从内存定义里摘掉，子会话退回继承父预设 + maxDepth 兜底。
         agentPreset: redteam-leaf
         allowedAgentPresets:
           - redteam-leaf

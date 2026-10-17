@@ -11,7 +11,7 @@
 - 桌面端面板顶部被窗口控制按钮压住：Electron 下 `dshp-dock` 与演练台浮层的可停靠上沿抬到 56px（默认位置一并下移），已存在 localStorage 里的旧位置下次打开会被 clamp 抬起来，「收起」不再被 − □ × 盖住。
 - 红队模式「加载失败」：0.2.1 的 `dsh-tool-subagent` 拉黑了 `toolFilter` / `persona`，配置里留着就 throw（`toolFilter is no longer supported`）。预设模板去掉该段，已有用户预设由启动自愈就地摘除；子智能体的叶子约束改由 `maxDepth: 1` 兜底（再深派发会被拒）。
 - 红队子智能体改用专用叶子预设：启动时由主预设派生并注册 `redteam-leaf`（插件表相同，去掉 `delegation` 整组、persona 清空），主预设的 `subagent` 行用 `agentPreset: redteam-leaf` 固定它 —— 这是 0.2.1 取代 `toolFilter` 的官方路子。模式下拉里会多一项「红队模式（子智能体）」，那是给子会话用的，不用手动选。
-- 「清洗」页新增「子智能体叶子预设」开关（默认开，走 `/dsh-purge/leaf-preset`，设置存在 `$DSH_HOME/redteam/settings.json`）：关掉后不再注册 `redteam-leaf`，同时把主预设里指向叶子的 `agentPreset` 摘掉（否则会指向未注册的 id 把红队预设弄 broken），子会话退回"继承父预设 + `maxDepth` 兜底"。预设是启动时注册的，切换后重启桌面端生效。
+- 「清洗」页新增「子智能体叶子预设」开关（**默认关**，走 `/dsh-purge/leaf-preset`，设置存在 `$DSH_HOME/redteam/settings.json`）：打开后才注册 `redteam-leaf` 并把主预设的 `subagent` 行指过去；关着时不注册叶子，同时把主预设里指向叶子的 `agentPreset` 摘掉（否则会指向未注册的 id 把红队预设弄 broken），子会话退回"继承父预设 + `maxDepth` 兜底"。预设是启动时注册的，切换后重启桌面端生效。
 
 ## English
 
@@ -24,7 +24,7 @@
 - Desktop panel header no longer sits under the window controls: in Electron the dock and the drill overlay keep a 56px top inset (default position moved down too), and a previously saved localStorage position is clamped up on the next open, so "Collapse" is not covered by − □ ×.
 - Red-team preset no longer fails to load: 0.2.1 rejects `toolFilter` / `persona` in `dsh-tool-subagent` (`toolFilter is no longer supported`). The template drops that block, existing user presets are healed in place at startup, and the leaf constraint now rests on `maxDepth: 1` (deeper delegation is refused).
 - Red-team subagents switch to a dedicated leaf preset: at startup the main preset is forked into `redteam-leaf` (same plugin table minus the whole `delegation` group, persona blanked) and the main preset's `subagent` row pins it with `agentPreset: redteam-leaf` — the 0.2.1 replacement for `toolFilter`. The mode dropdown gains a "红队模式（子智能体）" entry meant for child sessions only.
-- New "Subagent leaf preset" toggle on the Clean page (on by default, `/dsh-purge/leaf-preset`, stored in `$DSH_HOME/redteam/settings.json`): turning it off stops registering `redteam-leaf` and strips the `agentPreset` reference from the main preset — without that strip the row would point at an unregistered id and break the whole red-team preset. Children then inherit the parent preset with `maxDepth` as the only guard. Presets register at host startup, so restart the desktop app after switching.
+- New "Subagent leaf preset" toggle on the Clean page (**off by default**, `/dsh-purge/leaf-preset`, stored in `$DSH_HOME/redteam/settings.json`): turning it on registers `redteam-leaf` and points the main preset's `subagent` row at it; with it off no leaf preset is registered and the `agentPreset` reference is stripped from the main preset — without that strip the row would point at an unregistered id and break the whole red-team preset. Children then inherit the parent preset with `maxDepth` as the only guard. Presets register at host startup, so restart the desktop app after switching.
 
 # 1.1.72
 
