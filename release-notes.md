@@ -8,6 +8,7 @@
 - `stripHarnessPersona` 折叠旧身份句时也不再吐 `{{cwd}}`；`isCwdOnlyText` 同时认新旧两种写法，历史会话照样吃掉。
 - `DSH_INTERPOLATE_ALLOWED` 去掉 `cwd`：用户规则里再写 `{{cwd}}` 会被转义成 `{ {cwd}}`，不会把宿主炸掉。
 - `ALLOW_EXEC_PERSONA_BLOCK/LINE` 与 YAML 折叠判定同步去掉变量。
+- 桌面端面板顶部被窗口控制按钮压住：Electron 下 `dshp-dock` 与演练台浮层的可停靠上沿抬到 56px（默认位置一并下移），已存在 localStorage 里的旧位置下次打开会被 clamp 抬起来，「收起」不再被 − □ × 盖住。
 
 ## English
 
@@ -17,6 +18,7 @@
 - `stripHarnessPersona` no longer folds the old identity line into a `{{cwd}}` template, and `isCwdOnlyText` recognizes both the new static text and the historical variants.
 - `DSH_INTERPOLATE_ALLOWED` drops `cwd`: a `{{cwd}}` in user rules is escaped to `{ {cwd}}` instead of breaking the host.
 - `ALLOW_EXEC_PERSONA_BLOCK/LINE` and the YAML fold predicate no longer carry the variable.
+- Desktop panel header no longer sits under the window controls: in Electron the dock and the drill overlay keep a 56px top inset (default position moved down too), and a previously saved localStorage position is clamped up on the next open, so "Collapse" is not covered by − □ ×.
 
 # 1.1.72
 

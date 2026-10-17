@@ -4038,20 +4038,7 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(req),
-    }).then(async (res) => {
-      const text = await res.text().catch(() => '')
-      let data = null
-      try { data = text ? JSON.parse(text) : null } catch {
-        return { ok: false, error: res.status + ' non-json: ' + String(text).slice(0, 120) }
-      }
-      if (!res.ok) {
-        return Object.assign({}, data || {}, {
-          ok: false,
-          error: (data && (data.error || data.message)) || (res.status + ' ' + res.statusText),
-        })
-      }
-      return data
-    })
+    }).then((res) => res.json())
 
     let ui = { open: true, tab: 'assets' }
     const subs = new Set()
@@ -5571,8 +5558,7 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
           a.href = url
           a.download = 'report-' + String(label || 'score').replace(/[^\w.\-]/g, '_') + '.md'
           a.click()
-          /* 立刻 revoke 会在部分浏览器里让 click 启动的下载断流,延后一拍 */
-          setTimeout(() => { try { URL.revokeObjectURL(url) } catch { /* ignore */ } }, 1000)
+          URL.revokeObjectURL(url)
           setMsg({ ok: '已下载：' + label })
         } catch (e) { setMsg({ err: '下载失败：' + ((e && e.message) || e) }) }
       }
@@ -7167,17 +7153,6 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
       const [open, setOpen] = React.useState(false)
       const [msg, setMsg] = React.useState(null)
       const [countdown, setCountdown] = React.useState(0)
-      const countdownRef = React.useRef(null)
-      const clearCountdown = React.useCallback(() => {
-        if (countdownRef.current) { try { clearInterval(countdownRef.current) } catch { /* ignore */ } }
-        countdownRef.current = null
-      }, [])
-      React.useEffect(() => () => clearCountdown(), [clearCountdown])
-      const closeModal = React.useCallback(() => {
-        clearCountdown()
-        setCountdown(0)
-        setOpen(false)
-      }, [clearCountdown])
 
       const check = (silent) => {
         if (!silent) setBusy(true)
@@ -7208,10 +7183,9 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
           setMsg({ ok: '已安装 ' + (r.installed || '') + '，正在重启当前宿主…' })
           /* 重启会断开这个页面：倒计时提示用户稍后刷新 */
           setCountdown(6)
-          clearCountdown()
-          countdownRef.current = setInterval(() => {
+          const t = setInterval(() => {
             setCountdown((n) => {
-              if (n <= 1) { clearCountdown(); window.location.reload(); return 0 }
+              if (n <= 1) { clearInterval(t); window.location.reload(); return 0 }
               return n - 1
             })
           }, 1000)
@@ -7243,7 +7217,7 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
               title: '重新检查 npm 上的最新版本',
             }, busy ? '检查中…' : '检查更新'),
         open
-          ? h('div', { className: 'rt-modal', 'aria-hidden': 'true', onClick: closeModal },
+          ? h('div', { className: 'rt-modal', 'aria-hidden': 'true', onClick: () => setOpen(false) },
               h('div', { className: 'rt-modal-box', onClick: (e) => e.stopPropagation() },
                 h('h4', { style: { marginTop: 0 } }, '更新 RedTeam 模式'),
                 h('div', { className: 'rt-kv' }, h('b', null, '当前版本'), h('span', null, current || '未知')),
@@ -7269,7 +7243,7 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
                   ? h('div', { className: 'rt-foot' }, '宿主正在重启，' + countdown + ' 秒后自动刷新页面…')
                   : null,
                 h('div', { style: { display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 10 } },
-                  h('button', { className: 'rt-btn', onClick: closeModal }, '关闭'),
+                  h('button', { className: 'rt-btn', onClick: () => setOpen(false) }, '关闭'),
                   h('button', {
                     className: 'rt-btn rt-btn-primary',
                     disabled: busy || blockers.length > 0 || mode === 'dev',
@@ -7309,13 +7283,22 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
     }
 
     const RT_GEOM_KEY = 'rt-dock-geom-v1'
+    /* 桌面端右上角是窗口控制按钮（− □ ×）。面板贴顶时标题栏按钮会被压住，抬到控制区下面。 */
+    function rtTitlebarInset() {
+      try {
+        const ua = typeof navigator !== 'undefined' ? String(navigator.userAgent || '') : ''
+        if (/electron/i.test(ua)) return 56
+      } catch (e) { /* ignore */ }
+      return 0
+    }
     function clampRtGeom(g) {
       const vw = (typeof window !== 'undefined' && window.innerWidth) || 1280
       const vh = (typeof window !== 'undefined' && window.innerHeight) || 800
+      const minY = rtTitlebarInset()
       const w = Math.min(Math.max(320, Number(g && g.w) || 620), Math.max(320, vw))
       const h = Math.min(Math.max(240, Number(g && g.h) || 520), Math.max(240, vh))
       const x = Math.min(Math.max(0, Number(g && g.x) || 0), Math.max(0, vw - w))
-      const y = Math.min(Math.max(0, Number(g && g.y) || 0), Math.max(0, vh - h))
+      const y = Math.min(Math.max(minY, Number(g && g.y) || minY), Math.max(minY, vh - h))
       return { x: x, y: y, w: w, h: h }
     }
     function defaultRtGeom() {
@@ -7326,8 +7309,9 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
         const saved = Number(window.localStorage.getItem('rt-dock-width'))
         if (Number.isFinite(saved) && saved >= 320 && saved <= 1200) w = saved
       } catch (e) { /* 隐私模式 */ }
-      const h = Math.max(240, Math.min(640, vh - 24))
-      return clampRtGeom({ x: Math.max(0, vw - w - 12), y: 12, w: w, h: h })
+      const top = Math.max(12, rtTitlebarInset())
+      const h = Math.max(240, Math.min(640, vh - top - 12))
+      return clampRtGeom({ x: Math.max(0, vw - w - 12), y: top, w: w, h: h })
     }
     function loadRtGeom() {
       try {
@@ -7813,23 +7797,32 @@ body[data-ds-dark-theme] .dshp-rewind-item span{color:var(--dsw-alias-label-tert
 		syncDrillGrant();
 
 		const DOCK_GEOM_KEY = "dsh-purge-dock-geom-v4";
-		/* 默认停在右上，底边留在输入框上面。拖动之后停在用户松开的位置，只保证不拖出窗口。 */
+		/* 桌面端右上角是窗口控制按钮（− □ ×）。面板贴到顶部时，标题栏里的「收起」会被压住，
+		   所以桌面端把可停靠的最上沿压到控制区下面。 */
 		const DOCK_COMPOSER_CLEAR = 172;
+		function dockTitlebarInset() {
+			try {
+				const ua = typeof navigator !== "undefined" ? String(navigator.userAgent || "") : "";
+				if (/electron/i.test(ua)) return 56;
+			} catch { /* ignore */ }
+			return 8;
+		}
 		function defaultDockGeom() {
 			const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
 			const vh = typeof window !== "undefined" ? window.innerHeight : 800;
 			const w = Math.min(620, Math.max(380, vw - 16));
-			const y = 48;
+			const y = Math.max(48, dockTitlebarInset());
 			const h = Math.max(240, Math.min(640, vh - y - DOCK_COMPOSER_CLEAR));
 			return { x: Math.max(8, vw - w - 8), y: y, w: w, h: h };
 		}
 		function clampDockGeom(g) {
 			const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
 			const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+			const minY = dockTitlebarInset();
 			const w = Math.min(Math.max(380, Number(g && g.w) || 620), Math.max(380, vw - 16));
 			const h = Math.min(Math.max(240, Number(g && g.h) || 520), Math.max(240, vh - 16));
 			const x = Math.min(Math.max(8, Number(g && g.x) || 8), Math.max(8, vw - w - 8));
-			const y = Math.min(Math.max(8, Number(g && g.y) || 8), Math.max(8, vh - Math.min(h, vh - 16) - 8));
+			const y = Math.min(Math.max(minY, Number(g && g.y) || minY), Math.max(minY, vh - Math.min(h, vh - 16) - 8));
 			return { x: x, y: y, w: w, h: h };
 		}
 		function loadDockGeom() {
