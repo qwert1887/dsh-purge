@@ -1,3 +1,23 @@
+# 1.1.73
+
+## 中文
+
+- 版本 **1.1.73**。
+- 修 0.2.1 上启用即崩：`unknown prompt variable "{{cwd}}" in section "deployment:persona-suffix"`。0.2.1 的 prompt 变量表只剩 `provider` / `model`，`cwd` 已下线，插值一抛错整段作废、会话不可用。
+- `cordis.patch.yml` 的 `personaSuffix` 与 `CWD_ONLY_SUFFIX` 改成静态句 `Your working directory is given in the runtime context.`；工作目录由 runtime context 首条提供，不再依赖变量。
+- `stripHarnessPersona` 折叠旧身份句时也不再吐 `{{cwd}}`；`isCwdOnlyText` 同时认新旧两种写法，历史会话照样吃掉。
+- `DSH_INTERPOLATE_ALLOWED` 去掉 `cwd`：用户规则里再写 `{{cwd}}` 会被转义成 `{ {cwd}}`，不会把宿主炸掉。
+- `ALLOW_EXEC_PERSONA_BLOCK/LINE` 与 YAML 折叠判定同步去掉变量。
+
+## English
+
+- **1.1.73**.
+- Fix an enable-time crash on 0.2.1: `unknown prompt variable "{{cwd}}" in section "deployment:persona-suffix"`. 0.2.1 registers only `provider` / `model`, so a `cwd` reference throws during interpolation and the whole session becomes unusable.
+- `personaSuffix` in `cordis.patch.yml` and `CWD_ONLY_SUFFIX` are static text now: `Your working directory is given in the runtime context.` The working directory already comes from the first runtime-context line.
+- `stripHarnessPersona` no longer folds the old identity line into a `{{cwd}}` template, and `isCwdOnlyText` recognizes both the new static text and the historical variants.
+- `DSH_INTERPOLATE_ALLOWED` drops `cwd`: a `{{cwd}}` in user rules is escaped to `{ {cwd}}` instead of breaking the host.
+- `ALLOW_EXEC_PERSONA_BLOCK/LINE` and the YAML fold predicate no longer carry the variable.
+
 # 1.1.72
 
 ## 中文

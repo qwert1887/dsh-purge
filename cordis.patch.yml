@@ -28,7 +28,9 @@
   config:
     includeHarnessIdentity: false
     personaPrefix: ""
-    personaSuffix: Your working directory is {{cwd}}.
+    # 0.2.1 的变量表只剩 provider / model。写 {{cwd}} 会让 persona-suffix 抛
+    # unknown prompt variable，整个会话直接不可用；工作目录由 runtime context 提供。
+    personaSuffix: Your working directory is given in the runtime context.
 
 - id: dsh-purge
   inject: [systemPrompt, tools]
