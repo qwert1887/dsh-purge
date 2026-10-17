@@ -1,3 +1,27 @@
+# 1.1.72
+
+## 中文
+
+- 版本 **1.1.72**，适配 **DeepSeek Harness 0.2.1-rc.1**（0.2.1-rc.2 锚点相同，一并可用）。
+- 0.2.1 把 Web 面身份文案搬进新包 `dsh-harness-dev-context`：#32 / #53 新增该目标文件，并补上「whose URL the runtime context names」「Current web GUI URL」「Current implementation checkout」「Advertised URL」几个新锚点。
+- 0.2.1 的 `system-prompt/assemble` 把上下文压制改成按 `required` 保留：#40 换用新锚点，注入段仍留在 waterfall 结果里、排在 closer 之后，也不再留下不可达的旧 `return`。
+- 0.2.1 minimal 预设把 `tool-fs` / `compaction` 插到 persona 之后：#26 补 `- id: tool-fs` 变体，仍关掉 `complete: true` 并补 `agent-instructions`。
+- 0.2.1 首轮用户消息改成按 `source.kind` 过滤：#68 补新锚点，`decision.messages` 兜底保留。
+- 0.2.1 conversation 客户端 `append()` 改成 `if (this.revised.size > 0) this.revised.clear()`：#77 补该变体，回退仍立即从当前对话拿掉已发送消息。
+- `dshTarget` 抬到 `0.2.1-rc.1`。0.2.0-rc.2 宿主继续可用，只属于 0.2.1 的锚点在对不上的版本上自动跳过。
+- Claude Code / Codex hooks 在 0.2.1 改为按需组合包：默认安装下 #30/#31/#64/#65 显示 `na`，装上对应包后照常清洗。
+
+## English
+
+- **1.1.72**, targets **DeepSeek Harness 0.2.1-rc.1** (0.2.1-rc.2 shares the same anchors).
+- 0.2.1 moved the Web-surface identity text into the new `dsh-harness-dev-context` package: #32 / #53 now target it and cover the new `whose URL the runtime context names`, `Current web GUI URL`, `Current implementation checkout`, and `Advertised URL` anchors.
+- 0.2.1 compacts contexts by `required` instead of dropping them: #40 uses a new anchor, keeps the inject inside the waterfall result after the closers, and no longer leaves an unreachable `return`.
+- The 0.2.1 minimal preset puts `tool-fs` / `compaction` right after persona: #26 gains a `- id: tool-fs` variant that still disables `complete: true` and adds `agent-instructions`.
+- 0.2.1 filters first-attempt messages by `source.kind`: #68 gains that anchor while keeping the `decision.messages` guard.
+- 0.2.1 `append()` uses `if (this.revised.size > 0) this.revised.clear()`: #77 gains that variant so rewind still drops sent messages immediately.
+- `dshTarget` bumped to `0.2.1-rc.1`. 0.2.0-rc.2 hosts keep working; 0.2.1-only anchors are skipped where they do not match.
+- Claude Code / Codex hooks ship as on-demand bundles in 0.2.1: #30/#31/#64/#65 report `na` on a default install and clean up as usual once those bundles are installed.
+
 # 1.1.71
 
 ## 中文
