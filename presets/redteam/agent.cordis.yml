@@ -305,6 +305,11 @@
         toolName: subagent
         modelSelectionSettings: true
         backgroundMode: continuable
+        # 0.2.1 用 Agent Preset 取代 toolFilter：子智能体固定跑「红队模式（子智能体）」
+        # 这个叶子预设（无 delegation 组、persona 已清空），从根上没有派发工具。
+        agentPreset: redteam-leaf
+        allowedAgentPresets:
+          - redteam-leaf
         # 子智能体是角色执行者（信息收集/资产梳理/漏洞发现/漏洞利用/内网渗透），**必须是叶子节点**。
         # 0.2.1 起 dsh-tool-subagent 移除了 toolFilter（连同 persona）：再写会让整个预设
         # "加载失败"（tool-subagent: toolFilter is no longer supported），也不再有"从子会话
