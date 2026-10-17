@@ -449,6 +449,10 @@ window.__ModuleLoader__.load({ id: "dsh-purge", factory: (require) => {
 			"hooksDeny.bypass": "放行 hooks 的 deny / ask（补丁 30 / 31 / 64 / 65）",
 			"hooksDeny.hint": "关掉后，用户自己的 PreToolUse / UserPromptSubmit / Stop hook 的 deny 会按官方逻辑生效。官方 ask 分支本身是空操作，关开关不会弹出审批框。改完后点「应用」并重启才写进宿主。",
 			"saved.hooksDeny": "已保存",
+			"leafPreset.title": "子智能体叶子预设",
+			"leafPreset.toggle": "子会话固定跑「红队模式（子智能体）」预设（0.2.1 取代 toolFilter）",
+			"leafPreset.hint": "开：子智能体没有 subagent / fork / workflow / ralph，也不继承指挥 persona；关：子会话继承父预设，只剩 maxDepth 兜底。预设是启动时注册的，改完要重启桌面端才生效。",
+			"saved.leafPreset": "已保存，重启后生效",
 			"continue.title": "失败重试 / 继续",
 			"continue.hint": "请求失败会自动重试；异常停止或中断可点「继续」或自动续跑。自己点停止不会自动继续。次数用完后需新开一轮。",
 			"continue.autoRetry": "失败自动重试",
@@ -789,6 +793,10 @@ window.__ModuleLoader__.load({ id: "dsh-purge", factory: (require) => {
 			"hooksDeny.bypass": "Bypass hook deny / ask (patches 30 / 31 / 64 / 65)",
 			"hooksDeny.hint": "When off, your own PreToolUse / UserPromptSubmit / Stop hook deny runs as the official host wrote it. The official ask branch is a no-op; turning this off will not show an approval dialog. Click Apply and restart to write the host files.",
 			"saved.hooksDeny": "Saved",
+			"leafPreset.title": "Subagent leaf preset",
+			"leafPreset.toggle": "Run child sessions on the \"Red team (subagent)\" preset (0.2.1 replacement for toolFilter)",
+			"leafPreset.hint": "On: children get no subagent / fork / workflow / ralph and no commander persona. Off: children inherit the parent preset and only maxDepth guards depth. Presets register at host startup — restart the desktop app after changing this.",
+			"saved.leafPreset": "Saved — restart to apply",
 			"continue.title": "Retry / Continue",
 			"continue.hint": "Failed requests auto-retry. After an abnormal stop or interrupt, use Continue or auto-resume. A manual stop never auto-continues. Counts reset after a completed turn.",
 			"continue.autoRetry": "Auto-retry on failure",
@@ -1230,6 +1238,61 @@ body:not([data-ds-dark-theme]) .dshp-auth-ops button.primary{background:var(--ds
 							onChange: (e) => save(e.target.checked),
 						}),
 						t("hooksDeny.bypass"),
+					),
+				),
+			);
+		}
+
+		function LeafPresetSection({ onSaved }) {
+			const t = useT();
+			const [cfg, setCfg] = useState(null);
+			const [notice, setNotice] = useState({ kind: "idle", text: "" });
+			const [busy, setBusy] = useState(false);
+
+			useEffect(() => {
+				apiJson("/dsh-purge/leaf-preset")
+					.then((d) => { if (d && d.ok) setCfg({ leafPreset: d.leafPreset !== false, source: d.source || "default" }); })
+					.catch(() => {});
+			}, []);
+
+			const save = (leafPreset) => {
+				if (!cfg || busy) return;
+				setCfg({ ...cfg, leafPreset });
+				setBusy(true);
+				apiJson("/dsh-purge/leaf-preset", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ leafPreset }),
+				})
+					.then((d) => {
+						if (d && d.ok) {
+							setCfg({ ...cfg, leafPreset: d.leafPreset === true });
+							setNotice({ kind: "ok", text: t("saved.leafPreset") });
+							if (typeof onSaved === "function") onSaved();
+						} else {
+							setNotice({ kind: "error", text: t("err.save", { error: (d && d.error) || "" }) });
+						}
+					})
+					.catch((e) => setNotice({ kind: "error", text: t("err.save", { error: e.message }) }))
+					.finally(() => setBusy(false));
+			};
+
+			if (!cfg) return null;
+			return h("div", { className: "dshp-cr", style: { marginTop: 12 } },
+				h("div", { className: "dshp-sub" },
+					h("h4", null, t("leafPreset.title")),
+					noticeNode(notice),
+				),
+				h("p", { className: "dshp-hint", style: { margin: "0 0 4px", color: "var(--dshp-mute)", fontSize: 12 } }, t("leafPreset.hint")),
+				h("div", { className: "dshp-cr-row" },
+					h("label", null,
+						h("input", {
+							type: "checkbox",
+							checked: cfg.leafPreset !== false,
+							disabled: busy,
+							onChange: (e) => save(e.target.checked),
+						}),
+						t("leafPreset.toggle"),
 					),
 				),
 			);
@@ -1944,6 +2007,7 @@ body:not([data-ds-dark-theme]) .dshp-auth-ops button.primary{background:var(--ds
 				h("div", { className: "dshp-bar", "aria-hidden": "true" }, h("i", { style: { width: pct + "%" } })),
 				h(PatchGroups, { state: s }),
 				h(HooksDenySection, { onSaved: loadAll }),
+				h(LeafPresetSection, { onSaved: loadAll }),
 				h("div", { className: "dshp-row", style: { marginTop: 14 } },
 					h(Btn, { kind: "primary", disabled: patchBusy || uninstallBusy || !overrideLoaded, onClick: () => doAction("apply", "action.apply") }, patchBusy ? t("btn.apply.busy") : t("btn.apply")),
 					h(Btn, { kind: "danger", disabled: patchBusy || uninstallBusy, onClick: () => doAction("revert", "action.revert") }, t("btn.revert")),
