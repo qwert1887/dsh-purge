@@ -162,7 +162,8 @@ WeChat name **「老张的ai科技」**, same handle as the live-room viewer boa
 
 The latest plugin supports **dsh 0.2** only — do not apply it to 0.1.x.
 
-- **dsh 0.2.1** (official desktop **0.2.1-rc.1** / official `dsh web`): use **1.1.73** or newer. This page installs that line.
+- **dsh 0.2.1-rc.3** (official desktop **0.2.1-rc.3** / `dsh@next`): **1.1.73** — anchors are identical to rc.2, no separate build needed.
+- **dsh 0.2.1** (official desktop **0.2.1-rc.1 / rc.2** / official `dsh web`): use **1.1.73** or newer. This page installs that line.
 - **dsh 0.2.0** (official desktop **0.2.0-rc.2**): **1.1.73** still applies cleanly; the 0.2.1-only anchors simply do not match. **1.1.40**–**1.1.71** is the pinned line.
 - **dsh 0.1.7** (incl. rc.1 / rc.2): use **1.1.39** or older — pick the tag on [Releases](https://github.com/YuJunZhiXue/dsh-purge/releases).
 
