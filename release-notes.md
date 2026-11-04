@@ -1,3 +1,41 @@
+# 1.8.0
+
+## 中文
+
+- 版本 **1.8.0**，适配 **DeepSeek Harness 0.2.2-rc.1**。0.2.1 的各 rc 继续可用。
+- 0.2.2 挪走 9 处补丁落点，本版逐条跟上：
+  - **#40**：`assemble` 提前返回带上 `tools`，complete 模式改成 `[completeSection]` 独占 sections。新增 0.2.2 注入骨架，保留 `tools`，注入段仍排在 closer 之后 —— 这是唯一会静默丢工具的改动，漏了模型拿不到任何工具 schema。
+  - **#74**：`preStep` 先解 `selection`/`toolSet`，`assemble` 改成对象参数并包进 `try`。新增该锚点，`__dshPurgePrepareAssemble` 预处理保留。
+  - **#67**：步进主体多包一层 `try`，缩进 4 tab → 5 tab。补 5-tab 变体。
+  - **#12**：ask 句改成 “Approval prompts are enabled in this session: …”。旧锚点消失但会被软结算误报 `already`，新增裸句锚点，`lib/index.js` 与 `lib/types/index.js` 一次覆盖。
+  - **#14**：`displayReason` 字面量改成 `escalationDisplayReason(mode, justification)` 函数调用。补三行调用锚点。
+  - **#17**：`editIntent` 收口到 `requirePresent(target, actor, "edit")`。新增该变体；重复应用不再从 applied 掉成 skipped。
+  - **#54**：交付物提示词迁到新包 `dsh-deliverable-file-references`，`targetFiles` 补路径。
+  - **#60**：PTC 执行器独立成 `dsh-tool-executor-ptc`，旧 `ptc.ts` 已删除。旧规则会“成功”打在废弃文件上，本版改指新包。
+  - **#62**：`serviceAsk` 搬到 `dsh-tools/lib/pipeline.js`，`undefined` 写成 `void 0`、缩进多一层。补 `tools-pipeline` 映射与两条新锚点。
+- 验证（干净安装，82 条补丁）：0.2.2-rc.1 与 0.2.1-rc.5 均为 `applied 63 / already 6 / missing_file 7 / skipped 1 / na 5`，逐 ID 差异为 0；第二轮 `applied 0 / already 69`，幂等；9 个被改写文件 `node --check` 全过。
+- 剩余的 `missing_file` / `skipped` / `na` 与 0.2.1 同源（可选包未装、梁神预设缺失、desktop-only 补丁在 web 面不适用），不是 0.2.2 新增失配。
+- `dshTarget` 抬到 `0.2.2-rc.1`。
+- 说明：#17 只放开 `editIntent`；0.2.2 新增的 `deleteIntent` 仍要求先读，需要放开再说。
+
+## English
+
+- **1.8.0**, targets **DeepSeek Harness 0.2.2-rc.1**. The 0.2.1 rcs keep working.
+- 0.2.2 moved nine patch anchors; all are followed here:
+  - **#40**: `assemble`'s early return now carries `tools`, and complete mode keeps only `[completeSection]`. New 0.2.2 inject body preserves `tools` and still orders the dsh-purge section after the closer — this is the one change that silently drops every tool schema if missed.
+  - **#74**: `preStep` resolves `selection`/`toolSet` first and calls `assemble` with an object inside a `try`. New anchor; the `__dshPurgePrepareAssemble` pre-step stays.
+  - **#67**: the step body gains another `try`, so indentation moves from 4 to 5 tabs. 5-tab variant added.
+  - **#12**: the ask sentence becomes “Approval prompts are enabled in this session: …”. The old anchor is gone but soft-settles as `already`; a bare-sentence anchor now covers both `lib/index.js` and `lib/types/index.js` in one pass.
+  - **#14**: `displayReason` becomes `escalationDisplayReason(mode, justification)`. Three-line call anchor added.
+  - **#17**: `editIntent` now routes through `requirePresent(target, actor, "edit")`. Variant added; a second Apply no longer flips it from applied to skipped.
+  - **#54**: deliverable wording moved to `dsh-deliverable-file-references`; `targetFiles` follows.
+  - **#60**: the PTC executor is its own package `dsh-tool-executor-ptc`; the old `ptc.ts` is deleted. The old rule “succeeded” against dead code — now it targets the live package.
+  - **#62**: `serviceAsk` moved to `dsh-tools/lib/pipeline.js`, with `undefined` written as `void 0` and one extra indent level. Adds the `tools-pipeline` mapping and two anchors.
+- Verification (clean installs, 82 patches): 0.2.2-rc.1 and 0.2.1-rc.5 both report `applied 63 / already 6 / missing_file 7 / skipped 1 / na 5`, zero per-ID differences; a second pass is `applied 0 / already 69` (idempotent); all nine rewritten files pass `node --check`.
+- The remaining `missing_file` / `skipped` / `na` rows are the same as on 0.2.1 (optional packages absent, liangshen preset missing, desktop-only patches not applicable to the web surface) — not new 0.2.2 mismatches.
+- `dshTarget` bumped to `0.2.2-rc.1`.
+- Note: #17 only opens `editIntent`; the new 0.2.2 `deleteIntent` still requires a prior read.
+
 # 1.1.73
 
 ## 中文
